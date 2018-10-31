@@ -602,6 +602,9 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
 	if (val == CPUFREQ_UPDATE_POLICY_CPU) {
 		cpufreq_stats_update_policy_cpu(policy);
 		return 0;
+	} else if (val == CPUFREQ_REMOVE_POLICY) {
+		__cpufreq_stats_free_table(policy);
+		return 0;
 	}
 
 	table = cpufreq_frequency_get_table(cpu);

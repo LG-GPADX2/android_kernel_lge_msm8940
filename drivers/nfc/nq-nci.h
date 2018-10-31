@@ -10,8 +10,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __NQ_NCI_H
-#define __NQ_NCI_H
+#ifndef __NFC_NCI_H
+#define __NFC_NCI_H
 
 #include <linux/i2c.h>
 #include <linux/types.h>

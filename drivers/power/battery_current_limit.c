@@ -29,6 +29,9 @@
 #include <linux/power_supply.h>
 #include <linux/cpumask.h>
 #include <linux/msm_thermal.h>
+#ifdef CONFIG_LGE_PM
+#include <soc/qcom/lge/board_lge.h>
+#endif
 
 #define CREATE_TRACE_POINTS
 #define _BCL_SW_TRACE
@@ -1673,10 +1676,22 @@ static int bcl_probe(struct platform_device *pdev)
 
 	/* For BCL */
 	/* Init default BCL params */
+#ifdef CONFIG_LGE_PM
+	if (lge_get_boot_mode() == LGE_BOOT_MODE_CHARGERLOGO) {
+		bcl_mode = BCL_DEVICE_DISABLED;
+		pr_info("Chargerlogo BCL Disable\n");
+	} else {
+		if (of_property_read_bool(pdev->dev.of_node, "qcom,bcl-enable"))
+			bcl_mode = BCL_DEVICE_ENABLED;
+		else
+			bcl_mode = BCL_DEVICE_DISABLED;
+	}
+#else
 	if (of_property_read_bool(pdev->dev.of_node, "qcom,bcl-enable"))
 		bcl_mode = BCL_DEVICE_ENABLED;
 	else
 		bcl_mode = BCL_DEVICE_DISABLED;
+#endif
 	bcl->bcl_mode = BCL_DEVICE_DISABLED;
 	bcl->dev = &pdev->dev;
 	bcl->bcl_monitor_type = BCL_IAVAIL_MONITOR_TYPE;

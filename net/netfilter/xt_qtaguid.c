@@ -1615,8 +1615,12 @@ static struct sock *qtaguid_find_sk(const struct sk_buff *skb,
 		 * "struct inet_timewait_sock" which is missing fields.
 		 */
 		if (sk->sk_state  == TCP_TIME_WAIT) {
-			if (sk != skb->sk)
-				sock_gen_put(sk);
+//below code is blocked by heeyeon.nah@lge.com, START
+//Because sockets on TIME-WAIT state cannot be freed after TIME-WAIT timeout, below if-statement is blocked.
+//			if (sk != skb->sk)
+//				sock_gen_put(sk);
+//below code is blocked by heeyeon.nah@lge.com, END
+      sock_gen_put(sk);
 			sk = NULL;
 		}
 	}
@@ -2537,6 +2541,11 @@ static int pp_stats_line(struct seq_file *m, struct tag_stat *ts_entry,
 	uid_t stat_uid = get_uid_from_tag(tag);
 	struct proc_print_info *ppi = m->private;
 	/* Detailed tags are not available to everybody */
+
+    /* Because of cts fail(testAppFailAccessPrivateData), so it will block that code */
+    //orignal
+	//if (get_atag_from_tag(tag) && !can_read_other_uid_stats(
+	//					make_kuid(&init_user_ns,stat_uid))) {
 	if (!can_read_other_uid_stats(make_kuid(&init_user_ns,stat_uid))) {
 		CT_DEBUG("qtaguid: stats line: "
 			 "%s 0x%llx %u: insufficient priv "

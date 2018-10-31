@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2008-2017, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -45,6 +45,10 @@
 #include <linux/kernel.h>
 #ifdef CONFIG_COMPAT
 #include <linux/compat.h>
+#endif
+
+#ifdef CONFIG_LGE_DIAG_BYPASS
+#include "lg_diag_bypass.h"
 #endif
 
 MODULE_DESCRIPTION("Diag Char Driver");
@@ -698,6 +702,11 @@ struct diag_cmd_reg_entry_t *diag_cmd_search(
 						continue;
 					}
 				}
+#ifdef CONFIG_LGE_DIAG_CMD_FORWARD_MODEM
+				if ((entry->cmd_code == 0x5D) && (item->proc != PERIPHERAL_MODEM)) {
+					continue;
+				}
+#endif
 				return &item->entry;
 			}
 		}
@@ -2950,6 +2959,11 @@ static ssize_t diagchar_write(struct file *file, const char __user *buf,
 	int err = 0;
 	int pkt_type = 0;
 	int payload_len = 0;
+
+#ifdef CONFIG_LGE_DM_APP
+    char *buf_cmp;
+#endif
+
 	const char __user *payload_buf = NULL;
 
 	/*
@@ -2969,7 +2983,20 @@ static ssize_t diagchar_write(struct file *file, const char __user *buf,
 		return -EIO;
 	}
 
+#ifdef CONFIG_LGE_DM_APP
+    if (driver->logging_mode == DM_APP_MODE) {
+        /* only diag cmd #250 for supporting testmode tool */
+        buf_cmp = (char *)buf + 4;
+        if (*(buf_cmp) != 0xFA)
+            return 0;
+    }
+#endif
+
+#ifdef CONFIG_LGE_DIAG_BYPASS
+	if (driver->logging_mode == DIAG_USB_MODE && !driver->usb_connected && !lge_bypass_status()) {
+#else
 	if (driver->logging_mode == DIAG_USB_MODE && !driver->usb_connected) {
+#endif
 		if (!((pkt_type == DCI_DATA_TYPE) ||
 		    (pkt_type == DCI_PKT_TYPE) ||
 		    (pkt_type & DATA_TYPE_DCI_LOG) ||
@@ -3312,7 +3339,7 @@ static int diagchar_cleanup(void)
 static int __init diagchar_init(void)
 {
 	dev_t dev;
-	int error, ret;
+	int error, ret, i;
 
 	pr_debug("diagfwd initializing ..\n");
 	ret = 0;
@@ -3357,7 +3384,8 @@ static int __init diagchar_init(void)
 	mutex_init(&driver->diag_file_mutex);
 	mutex_init(&driver->delayed_rsp_mutex);
 	mutex_init(&apps_data_mutex);
-	mutex_init(&driver->diagfwd_channel_mutex);
+	for (i = 0; i < NUM_PERIPHERALS; i++)
+		mutex_init(&driver->diagfwd_channel_mutex[i]);
 	init_waitqueue_head(&driver->wait_q);
 	INIT_WORK(&(driver->diag_drain_work), diag_drain_work_fn);
 	INIT_WORK(&(driver->update_user_clients),
