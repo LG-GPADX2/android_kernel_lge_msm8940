@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DEFCONFIG_FILE=$1
+DEFCONFIG_FILE_NAME="tf840_defconfig"
 
 if [ -z "$DEFCONFIG_FILE" ]; then
 	echo "Need defconfig file(xxx_defconfig)!"
@@ -22,6 +23,6 @@ make menuconfig ARCH=arm
 
 make savedefconfig ARCH=arm
 # copy .config to defconfig
-mv defconfig arch/arm/configs/${DEFCONFIG_FILE}
+mv defconfig arch/arm/configs/${DEFCONFIG_FILE_NAME}
 # clean kernel object
 make mrproper
