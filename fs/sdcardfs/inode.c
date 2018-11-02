@@ -442,6 +442,34 @@ out_eacces:
 	return err;
 }
 
+static int sdcardfs_mknod(struct inode *dir, struct dentry *dentry,
+			umode_t mode, dev_t dev)
+{
+	int err = 0;
+	struct dentry *lower_dentry;
+	struct dentry *lower_parent_dentry = NULL;
+	struct path lower_path;
+	const struct cred *saved_cred = NULL;
+
+	OVERRIDE_CRED(SDCARDFS_SB(dir->i_sb), saved_cred);
+
+	sdcardfs_get_lower_path(dentry, &lower_path);
+	lower_dentry = lower_path.dentry;
+	lower_parent_dentry = lock_parent(lower_dentry);
+
+    err = mnt_want_write(lower_path.mnt);
+    if (err)
+        goto out_unlock;
+
+	err = vfs_mknod(lower_parent_dentry->d_inode, lower_dentry, mode, dev);
+	if (err)
+		goto out;
+
+	err = sdcardfs_interpose(dentry, dir->i_sb, &lower_path);
+	if (err)
+		goto out;
+	fsstack_copy_attr_times(dir, sdcardfs_lower_inode(dir));
+	fsstack_copy_inode_size(dir, lower_parent_dentry->d_inode);
 out:
 	mnt_drop_write(lower_path.mnt);
 out_unlock:

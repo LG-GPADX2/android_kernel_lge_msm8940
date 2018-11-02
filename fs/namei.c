@@ -3887,10 +3887,15 @@ SYSCALL_DEFINE1(unlink, const char __user *, pathname)
 {
 #ifdef CONFIG_SDCARD_FS
 	return do_unlinkat(AT_FDCWD, pathname, true);
+#else
+	return do_unlinkat(AT_FDCWD, pathname);
+#endif
 }
 
 int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname)
 {
+
+	int error = may_create(dir, dentry);
 
 	if (error)
 		return error;

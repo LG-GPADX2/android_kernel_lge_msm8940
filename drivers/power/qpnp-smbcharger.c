@@ -645,6 +645,9 @@ enum hvdcp_voters {
 	NUM_HVDCP_VOTERS,
 };
 
+#if defined(CONFIG_LGE_PM_QC20_SCENARIO) || defined(CONFIG_LGE_PM_CHG_LIMIT)
+enum qpnp_quick_current_status {
+	/* QC20 normal current */
 	QC20_CURRENT_NORMAL,
 	/* QC20 limmited current by LCD, CALL status */
 	QC20_CURRENT_LIMITED,

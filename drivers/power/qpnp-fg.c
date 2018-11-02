@@ -980,10 +980,13 @@ static char *fg_supplicants[] = {
 	"fg_adc"
 };
 
+#if defined(CONFIG_TOUCHSCREEN_UNIFIED_DRIVER_3)
+int touch_ref_batt_temp = 0;
 #endif
 
 #define DEBUG_PRINT_BUFFER_SIZE 64
 static void fill_string(char *str, size_t str_len, u8 *buf, int buf_len)
+{
 	int pos = 0;
 	int i;
 

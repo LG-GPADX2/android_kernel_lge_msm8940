@@ -1694,7 +1694,11 @@ exit:
 		mbhc->mbhc_cb->hph_pull_down_ctrl(codec, true);
 
 	mbhc->mbhc_cb->lock_sleep(mbhc, false);
+	pr_info("[LGE MBHC] %s: leave\n", __func__);
+}
+
 /* called under codec_resource_lock acquisition */
+static void wcd_mbhc_detect_plug_type(struct wcd_mbhc *mbhc)
 {
 	struct snd_soc_codec *codec = mbhc->codec;
 	bool micbias1 = false;
