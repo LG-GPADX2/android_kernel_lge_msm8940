@@ -524,6 +524,7 @@ subdir- := lge
 else
 subdir- := qcom
 endif
+endif
 
 ifeq ($(CONFIG_MACH_LGE),y)
 # *.dtb used to be generated in the directory above. Clean out the

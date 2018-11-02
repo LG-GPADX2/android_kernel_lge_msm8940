@@ -418,6 +418,7 @@
 				"msm-dai-q6-dev.32773", "msm-dai-q6-dev.32770";
 	};
 
+	ext_codec: sound-9335 {
 		status = "disabled";
 		compatible = "qcom,msm8952-audio-slim-codec";
 		qcom,model = "msm8952-tasha-snd-card";
